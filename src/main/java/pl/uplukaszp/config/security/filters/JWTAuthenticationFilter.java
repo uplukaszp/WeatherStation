@@ -2,6 +2,7 @@ package pl.uplukaszp.config.security.filters;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 
 import javax.servlet.FilterChain;
@@ -49,7 +50,9 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
 		String token = Jwts.builder().setSubject(((User) auth.getPrincipal()).getUsername())
 				.setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-				.signWith(SignatureAlgorithm.HS512, SecurityConstants.SECRET).compact();
+				.signWith(SignatureAlgorithm.HS512, Base64.getEncoder().encodeToString(SecurityConstants.SECRET.getBytes()))
+				.compact();
 		response.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
 	}
+
 }

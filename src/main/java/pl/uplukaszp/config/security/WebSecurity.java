@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import pl.uplukaszp.config.beans.MyAuthManager;
 import pl.uplukaszp.config.security.filters.JWTAuthenticationFilter;
 import pl.uplukaszp.config.security.filters.JWTAuthorizationFilter;
 
@@ -18,13 +19,14 @@ import pl.uplukaszp.config.security.filters.JWTAuthorizationFilter;
 public class WebSecurity extends WebSecurityConfigurerAdapter {
 	private UserDetailsService userDetailsService;
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
-
-	@Autowired
+	private MyAuthManager manager;
 	private CorsConfigurationSource corssource;
 
-	public WebSecurity(UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+	public WebSecurity(UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder,MyAuthManager manager,CorsConfigurationSource corssource) {
 		this.userDetailsService = userDetailsService;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+		this.corssource=corssource;
+		this.manager=manager;
 	}
 
 	@Override
@@ -33,8 +35,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 				.antMatchers(HttpMethod.POST, "/user").permitAll()
 				.antMatchers("/login").permitAll()
 
-				.anyRequest().authenticated().and().addFilter(new JWTAuthenticationFilter(authenticationManager()))
-				.addFilter(new JWTAuthorizationFilter(authenticationManager()))
+				.anyRequest().authenticated().and().addFilter(new JWTAuthenticationFilter(manager))
+				.addFilter(new JWTAuthorizationFilter(manager))
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
 

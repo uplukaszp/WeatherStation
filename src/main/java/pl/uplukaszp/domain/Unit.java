@@ -9,15 +9,11 @@ import lombok.Data;
 
 @Data
 @Entity
-public class UserData {
+public class Unit {
 	@Id
 	@GeneratedValue
 	private Long id;
-
-	@Column(unique = true, nullable = false)
-	private String email;
-
-	@Column(nullable = false)
-	private String password;
-
+	@Column(nullable = false, unique = true)
+	private String symbol;
+	private String description;
 }

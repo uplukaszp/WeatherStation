@@ -17,22 +17,36 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import pl.uplukaszp.domain.ApiKey;
 import pl.uplukaszp.domain.UserData;
 import pl.uplukaszp.dto.PasswordDTO;
 import pl.uplukaszp.dto.UserDataDTO;
+import pl.uplukaszp.repo.ApiKeyRepository;
 import pl.uplukaszp.repo.UserRepository;
 import pl.uplukaszp.util.ValidationErrorParser;
 
 @RestController
-@Controller("/user")
 public class UserController {
 
 	@Autowired
 	private UserRepository repo;
+	
+	@Autowired
+	private ApiKeyRepository apiRepo;
+	
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
-
-	@PostMapping
+	
+	
+	private void generateApiKey(UserData user)
+	{
+		ApiKey key=new ApiKey();
+		key.setOwner(user);
+		key.setAccessKey(bCryptPasswordEncoder.encode(user.getEmail()));
+		System.err.println(key);
+		apiRepo.save(key);
+	}
+	@PostMapping("/user")
 	public ResponseEntity<Map<String,String>> signUp(@Valid @RequestBody UserDataDTO user, Errors errors) {
 		if (errors.hasErrors()) {
 			return ResponseEntity.badRequest().body(ValidationErrorParser.parseErrors(errors));
@@ -41,19 +55,16 @@ public class UserController {
 			UserData u = new UserData();
 			u.setEmail(user.getEmail());
 			u.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-			repo.save(u);
+			u=repo.save(u);
+			generateApiKey(u);
 			return new ResponseEntity<Map<String, String>>(HttpStatus.OK);
 		}
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ValidationErrorParser.parseError("email","User already exist"));
 	}
-	@PutMapping
+	@PutMapping("/user")
 	public ResponseEntity<Map<String,String>> changeUserPassword(Authentication auth,@RequestBody @Valid PasswordDTO password,Errors errors)
 	{
 		UserData u=repo.findByEmail(auth.getName());
-		if(u==null)
-		{
-			return new ResponseEntity<Map<String, String>>(HttpStatus.NOT_FOUND);
-		}
 		if (errors.hasErrors()) {
 			return ResponseEntity.badRequest().body(ValidationErrorParser.parseErrors(errors));
 		}
@@ -61,13 +72,9 @@ public class UserController {
 		repo.save(u);
 		return new ResponseEntity<Map<String, String>>(HttpStatus.OK);	
 	}
-	@DeleteMapping
+	@DeleteMapping("/user")
 	public ResponseEntity<Map<String,String>> changeUserPassword(Authentication auth){
 		UserData u=repo.findByEmail(auth.getName());
-		if(u==null)
-		{
-			return new ResponseEntity<Map<String, String>>(HttpStatus.NOT_FOUND);
-		}
 		repo.delete(u);
 		//TODO remove all user data ( sensors, measurments, etc.)
 		return new ResponseEntity<Map<String, String>>(HttpStatus.OK);	

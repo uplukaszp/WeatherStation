@@ -9,15 +9,12 @@ import lombok.Data;
 
 @Data
 @Entity
-public class UserData {
+public class Location {
 	@Id
 	@GeneratedValue
 	private Long id;
-
-	@Column(unique = true, nullable = false)
-	private String email;
-
-	@Column(nullable = false)
-	private String password;
-
+	@Column(nullable=false)
+	private double latitude;
+	@Column(nullable=false)
+	private double longitude; 
 }

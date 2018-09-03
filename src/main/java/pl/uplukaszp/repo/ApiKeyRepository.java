@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import pl.uplukaszp.domain.ApiKey;
-import pl.uplukaszp.domain.projections.ApiKeyWithoutOwner;
+import pl.uplukaszp.dto.projections.ApiKeyWithoutOwner;
 
 @Repository
 public interface ApiKeyRepository extends JpaRepository<ApiKey, Long>{

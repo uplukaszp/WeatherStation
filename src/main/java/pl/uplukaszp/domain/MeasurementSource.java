@@ -10,6 +10,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import lombok.Data;
 
 @Data
@@ -32,7 +36,8 @@ public class MeasurementSource {
 	@OneToOne
 	private Location location;
 	
-	@OneToMany
+	@OneToMany(mappedBy="source")
+	@JsonManagedReference
 	private List<Sensor> sensors;
 
 	public void addSensor(Sensor s) {

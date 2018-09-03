@@ -1,4 +1,4 @@
-package pl.uplukaszp.domain.projections;
+package pl.uplukaszp.dto.projections;
 
 public interface ApiKeyWithoutOwner {
 	public String getAccessKey();

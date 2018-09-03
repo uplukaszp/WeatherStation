@@ -19,18 +19,34 @@ public class SecurityBeans {
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-
-	@Bean
-	@Primary
-	CorsConfigurationSource corsConfigurationSource() {
+	
+	private CorsConfiguration blockNotMyDomain()
+	{
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(Arrays.asList("http://localhost"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "content-type", "x-auth-token"));
 		configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization"));
 		configuration.setAllowCredentials(true);
+		return configuration;
+	}
+	
+	private CorsConfiguration allowAllToUploadData()
+	{
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(Arrays.asList("*"));
+		configuration.setAllowedMethods(Arrays.asList("POST"));
+		configuration.setAllowedHeaders(Arrays.asList("Authorization", "content-type", "x-auth-token"));
+		configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization"));
+		return configuration;
+	}
+	@Bean
+	@Primary
+	CorsConfigurationSource corsConfigurationSource() {
+		
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
+		source.registerCorsConfiguration("/measurement", allowAllToUploadData());
+		source.registerCorsConfiguration("/**", blockNotMyDomain());
 		return source;
 	}
 	

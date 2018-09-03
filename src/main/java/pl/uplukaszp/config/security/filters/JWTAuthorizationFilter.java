@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import pl.uplukaszp.config.beans.TokenUtility;
 import pl.uplukaszp.config.security.SecurityConstants;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
@@ -35,25 +36,20 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 			return;
 		}
 
-		UsernamePasswordAuthenticationToken tokenAuthentication = getAuthentication(req);
-		Authentication authentication=getAuthenticationManager().authenticate(tokenAuthentication);
+		UsernamePasswordAuthenticationToken tokenAuthentication = new UsernamePasswordAuthenticationToken(
+				getUserName(req), null, null);
+		Authentication authentication = getAuthenticationManager().authenticate(tokenAuthentication);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		chain.doFilter(req, res);
 	}
 
-	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-        String token = request.getHeader(SecurityConstants.HEADER_STRING);
-        if (token != null) {
-            String user = Jwts.parser()
-                    .setSigningKey(Base64.getEncoder().encodeToString(SecurityConstants.SECRET.getBytes()))
-                    .parseClaimsJws(token.replace(SecurityConstants.TOKEN_PREFIX,""))
-                    .getBody()
-                    .getSubject();
-            if (user != null) {
-                return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
-            }
-            return null;
-        }
-        return null;
-    }
+	private String getUserName(HttpServletRequest request) {
+		String token = request.getHeader(SecurityConstants.HEADER_STRING);
+		if (token != null) {
+			token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
+			return TokenUtility.getUserFromToken(token);
+
+		}
+		return null;
+	}
 }

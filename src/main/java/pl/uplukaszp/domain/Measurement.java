@@ -1,6 +1,6 @@
 package pl.uplukaszp.domain;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,7 +28,6 @@ public class Measurement {
     @JsonBackReference
 	private Sensor sensor;
 	
-	@CreationTimestamp
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date date;
+	@Column(nullable=false)
+	private LocalDateTime date;
 }

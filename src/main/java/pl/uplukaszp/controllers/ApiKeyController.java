@@ -5,8 +5,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import pl.uplukaszp.domain.ApiKey;
-import pl.uplukaszp.domain.projections.ApiKeyWithoutOwner;
+import pl.uplukaszp.dto.projections.ApiKeyWithoutOwner;
 import pl.uplukaszp.repo.ApiKeyRepository;
 
 @RestController

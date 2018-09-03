@@ -10,18 +10,15 @@ import org.springframework.stereotype.Component;
 import pl.uplukaszp.repo.UserRepository;
 
 @Component
-public class MyAuthManager implements AuthenticationManager{
+public class MyAuthManager implements AuthenticationManager {
 
 	@Autowired
 	UserRepository repo;
-	
 
-	
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		System.err.println("authentication");
-		System.err.println(authentication.getPrincipal());
-		if(repo.findByEmail((String) authentication.getPrincipal())==null)throw new DisabledException("Acount does not exist"); 
+		if (repo.findByEmail((String) authentication.getPrincipal()) == null)
+			throw new DisabledException("Acount does not exist");
 		return authentication;
 	}
 

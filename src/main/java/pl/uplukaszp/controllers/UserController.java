@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import pl.uplukaszp.config.beans.TokenUtility;
 import pl.uplukaszp.domain.ApiKey;
 import pl.uplukaszp.domain.UserData;
 import pl.uplukaszp.dto.PasswordDTO;
@@ -42,7 +43,7 @@ public class UserController {
 	{
 		ApiKey key=new ApiKey();
 		key.setOwner(user);
-		key.setAccessKey(bCryptPasswordEncoder.encode(user.getEmail()));
+		key.setAccessKey(TokenUtility.createToken(user.getEmail(), null));
 		System.err.println(key);
 		apiRepo.save(key);
 	}

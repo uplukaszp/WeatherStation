@@ -1,6 +1,5 @@
 package pl.uplukaszp.config.beans;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
@@ -12,8 +11,11 @@ import pl.uplukaszp.repo.UserRepository;
 @Component
 public class MyAuthManager implements AuthenticationManager {
 
-	@Autowired
 	UserRepository repo;
+
+	public MyAuthManager(UserRepository repo) {
+		this.repo = repo;
+	}
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {

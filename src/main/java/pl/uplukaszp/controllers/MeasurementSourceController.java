@@ -1,10 +1,8 @@
 package pl.uplukaszp.controllers;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,11 +10,9 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.geo.Point;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,17 +24,12 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mysql.fabric.xmlrpc.base.Array;
 
-import io.jsonwebtoken.lang.Arrays;
 import pl.uplukaszp.domain.Location;
 import pl.uplukaszp.domain.MeasurementSource;
 import pl.uplukaszp.dto.MeasurementSourceDTO;
-import pl.uplukaszp.dto.PositionDTO;
 import pl.uplukaszp.dto.projections.MeasurementSourceWithoutOwner;
-import pl.uplukaszp.dto.projections.SensorWithLastMeasurement;
 import pl.uplukaszp.repo.LocationRepository;
 import pl.uplukaszp.repo.MeasurementSourceRepository;
 import pl.uplukaszp.repo.UserRepository;

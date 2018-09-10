@@ -59,7 +59,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
 		String token = TokenUtility.createToken(auth.getName(), EXPIRATION_TIME);
 		response.addHeader(HEADER_STRING, TOKEN_PREFIX + " " + token);
-		System.out.println("successfulAuth()+ " + token + " exp time " + EXPIRATION_TIME);
 	}
 
 }

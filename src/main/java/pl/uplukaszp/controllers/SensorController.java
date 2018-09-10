@@ -2,7 +2,6 @@ package pl.uplukaszp.controllers;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +42,6 @@ public class SensorController {
 	@Autowired
 	UnitRepository unitRepo;
 
-	//TODO return error if source or unit not exist
 	@PostMapping("/sensor")
 	public ResponseEntity<Map<String, String>> addSensor(@RequestBody @Valid SensorDTO s, Errors errors) {
 		if (errors.hasErrors()) {
@@ -51,7 +49,12 @@ public class SensorController {
 		}
 
 		MeasurementSource source = sourceRepo.getOne(Long.valueOf(s.getSource()));
+		if (source == null)
+			return ResponseEntity.badRequest()
+					.body(ValidationErrorParser.parseError("source", "Source does not exist"));
 		Unit unit = unitRepo.getOne(Long.valueOf(s.getUnit()));
+		if (unit == null)
+			return ResponseEntity.badRequest().body(ValidationErrorParser.parseError("unit", "Unit does not exist"));
 		Sensor sensor = new Sensor();
 
 		sensor.setUnit(unit);
@@ -59,25 +62,23 @@ public class SensorController {
 		sensor = sensorRepo.save(sensor);
 
 		source.addSensor(sensor);
-		
+
 		sourceRepo.save(source);
 
 		return ResponseEntity.ok().body(null);
 
 	}
-	
+
 	@GetMapping("/sensor")
-	public ResponseEntity<List<SensorWithSourceAndMeasurements>> getMeasurementsData(@RequestParam("id")String ids)
-	{
-		ObjectMapper mapper=new ObjectMapper();
+	public ResponseEntity<List<SensorWithSourceAndMeasurements>> getMeasurementsData(@RequestParam("id") String ids) {
+		ObjectMapper mapper = new ObjectMapper();
 		try {
-			List<Long> idList=mapper.readValue(ids,new TypeReference<ArrayList<Long>>() {});
-			List<SensorWithSourceAndMeasurements> sensors=sensorRepo.findAllByIdIn(idList);
-			return new ResponseEntity<List<SensorWithSourceAndMeasurements>>(sensors,HttpStatus.OK);
+			List<Long> idList = mapper.readValue(ids, new TypeReference<ArrayList<Long>>() {
+			});
+			List<SensorWithSourceAndMeasurements> sensors = sensorRepo.findAllByIdIn(idList);
+			return new ResponseEntity<List<SensorWithSourceAndMeasurements>>(sensors, HttpStatus.OK);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return ResponseEntity.badRequest().build();
 		}
-		return ResponseEntity.badRequest().build();
 	}
 }

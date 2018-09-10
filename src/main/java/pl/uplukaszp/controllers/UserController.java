@@ -1,5 +1,6 @@
 package pl.uplukaszp.controllers;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -18,10 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import pl.uplukaszp.config.beans.TokenUtility;
 import pl.uplukaszp.domain.ApiKey;
+import pl.uplukaszp.domain.MeasurementSource;
 import pl.uplukaszp.domain.UserData;
 import pl.uplukaszp.dto.PasswordDTO;
 import pl.uplukaszp.dto.UserDataDTO;
 import pl.uplukaszp.repo.ApiKeyRepository;
+import pl.uplukaszp.repo.MeasurementSourceRepository;
 import pl.uplukaszp.repo.UserRepository;
 import pl.uplukaszp.util.ValidationErrorParser;
 
@@ -33,6 +36,9 @@ public class UserController {
 	
 	@Autowired
 	private ApiKeyRepository apiRepo;
+	
+	@Autowired
+	private MeasurementSourceRepository measurementSourceRepo;
 	
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -72,9 +78,10 @@ public class UserController {
 		return new ResponseEntity<Map<String, String>>(HttpStatus.OK);	
 	}
 	@DeleteMapping("/user")
-	public ResponseEntity<Map<String,String>> changeUserPassword(Authentication auth){
+	public ResponseEntity<Map<String,String>> deleteUser(Authentication auth){
 		UserData u=repo.findByEmail(auth.getName());
 		repo.delete(u);
+		
 		//TODO remove all user data ( sensors, measurments, etc.)
 		return new ResponseEntity<Map<String, String>>(HttpStatus.OK);	
 

@@ -14,5 +14,7 @@ public interface MeasurementSourceRepository extends JpaRepository<MeasurementSo
 	List<MeasurementSourceWithoutOwner> findByOwnerEmail(String email);
 	
 	List<MeasurementSourceWithoutOwner>findByOwnerEmailOrPubliclyIsTrue(String email);
+
+	List<MeasurementSource> findAllByOwnerId(Long id);
 	
 }

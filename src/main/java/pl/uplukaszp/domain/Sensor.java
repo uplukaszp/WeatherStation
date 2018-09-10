@@ -9,10 +9,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import lombok.Data;
 
@@ -22,15 +22,17 @@ public class Sensor {
 	@Id
 	@GeneratedValue
 	private Long id;
-	
-	@OneToMany(mappedBy="sensor")
-    @JsonManagedReference
-    @OrderBy("date ASC")
+
+	@OneToMany(mappedBy = "sensor")
+	@JsonManagedReference
+	@OrderBy("date ASC")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private List<Measurement> measurements;
-	
+
 	@ManyToOne
 	private Unit unit;
-	
-	@ManyToOne(optional=false)
+
+	@ManyToOne(optional = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private MeasurementSource source;
 }

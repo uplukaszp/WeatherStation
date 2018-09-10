@@ -10,6 +10,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -28,16 +31,19 @@ public class MeasurementSource {
 	
 	@OneToOne
 	@JoinColumn(name = "user_data_id")
+	@OnDelete(action=OnDeleteAction.CASCADE)
 	private UserData owner ;
 	
 	@Column(nullable = false)
 	private boolean publicly;
 	
 	@OneToOne
+	@OnDelete(action=OnDeleteAction.CASCADE)
 	private Location location;
 	
 	@OneToMany(mappedBy="source")
 	@JsonManagedReference
+	@OnDelete(action=OnDeleteAction.CASCADE)
 	private List<Sensor> sensors;
 
 	public void addSensor(Sensor s) {

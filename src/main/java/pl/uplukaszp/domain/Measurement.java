@@ -7,10 +7,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -22,12 +21,13 @@ public class Measurement {
 	@Id
 	@GeneratedValue
 	private Long id;
-	@Column(nullable=false)
+	@Column(nullable = false)
 	private float value;
 	@ManyToOne
-    @JsonBackReference
+	@JsonBackReference
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Sensor sensor;
-	
-	@Column(nullable=false)
+
+	@Column(nullable = false)
 	private LocalDateTime date;
 }

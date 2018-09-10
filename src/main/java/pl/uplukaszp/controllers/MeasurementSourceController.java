@@ -65,7 +65,9 @@ public class MeasurementSourceController {
 		source.setLocation(loc);
 		source.setPublicly(sourceDTO.isPublicly());
 		source.setOwner(userRepo.findByEmail(auth.getName()));
-		repo.save(source);
+		System.err.println("before "+source);
+		source=repo.save(source);
+		System.err.println("after "+source);
 		return ResponseEntity.ok(null);
 	}
 

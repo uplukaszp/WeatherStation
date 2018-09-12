@@ -22,6 +22,7 @@ import pl.uplukaszp.config.beans.MyAuthManager;
 import pl.uplukaszp.config.beans.TokenUtility;
 import pl.uplukaszp.domain.UserData;
 
+/**Used in login process*/
 @Component
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -32,6 +33,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
 	@Value("${settings.header}")
 	private String HEADER_STRING;
+	
 	@Value("${settings.token_prefix}")
 	private String TOKEN_PREFIX;
 

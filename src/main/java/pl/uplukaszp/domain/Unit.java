@@ -7,6 +7,9 @@ import javax.persistence.Id;
 
 import lombok.Data;
 
+/**
+ * Describes the physical quantity measured by the sensor
+ */
 @Data
 @Entity
 public class Unit {

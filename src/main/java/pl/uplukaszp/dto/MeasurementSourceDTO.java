@@ -9,8 +9,8 @@ import lombok.Data;
 public class MeasurementSourceDTO {
 
 	private static final String nameMessage="Name cannot be empty";
-	private static final String latitudeMessage="Please provide correct latitude";
-	private  static final String longitudeMessage="Please provide correct longitude";
+	private static final String latitudeMessage="Please provide correct latitude(e.g. 0, 11.8, +90, -51.9)";
+	private  static final String longitudeMessage="Please provide correct longitude(e.g. 0, 11.8, +150, -100.9)";
 	@NotNull(message=nameMessage)
 	private String name;
 	@NotNull(message=latitudeMessage)

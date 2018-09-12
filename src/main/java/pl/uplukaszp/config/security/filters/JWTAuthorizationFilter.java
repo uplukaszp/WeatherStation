@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import pl.uplukaszp.config.beans.MyAuthManager;
 import pl.uplukaszp.config.beans.TokenUtility;
 
+/** Used when authorization is based on tokens */
 @Component
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
@@ -38,11 +39,11 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 			chain.doFilter(req, res);
 			return;
 		}
-
 		UsernamePasswordAuthenticationToken tokenAuthentication = new UsernamePasswordAuthenticationToken(
 				getUserName(req), null, null);
 		Authentication authentication = getAuthenticationManager().authenticate(tokenAuthentication);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
+
 		chain.doFilter(req, res);
 	}
 
@@ -51,7 +52,6 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 		if (token != null) {
 			token = token.replace(TOKEN_PREFIX + " ", "");
 			return TokenUtility.getUserFromToken(token);
-
 		}
 		return null;
 	}

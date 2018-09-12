@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import pl.uplukaszp.domain.MeasurementSource;
@@ -42,43 +45,62 @@ public class SensorController {
 	@Autowired
 	UnitRepository unitRepo;
 
+	/**
+	 * Saves new Sensor in the database.
+	 * 
+	 * @return @see ValidationErrorParser#parseErrors(Errors)
+	 */
 	@PostMapping("/sensor")
 	public ResponseEntity<Map<String, String>> addSensor(@RequestBody @Valid SensorDTO s, Errors errors) {
 		if (errors.hasErrors()) {
 			return ResponseEntity.badRequest().body(ValidationErrorParser.parseErrors(errors));
 		}
-
-		MeasurementSource source = sourceRepo.getOne(Long.valueOf(s.getSource()));
-		if (source == null)
+		Optional<MeasurementSource> source = sourceRepo.findById(s.getSource());
+		if (!source.isPresent())
 			return ResponseEntity.badRequest()
 					.body(ValidationErrorParser.parseError("source", "Source does not exist"));
-		Unit unit = unitRepo.getOne(Long.valueOf(s.getUnit()));
-		if (unit == null)
+		Optional<Unit> unit = unitRepo.findById(s.getUnit());
+		if (!unit.isPresent())
 			return ResponseEntity.badRequest().body(ValidationErrorParser.parseError("unit", "Unit does not exist"));
 		Sensor sensor = new Sensor();
 
-		sensor.setUnit(unit);
-		sensor.setSource(source);
+		sensor.setUnit(unit.get());
+		sensor.setSource(source.get());
 		sensor = sensorRepo.save(sensor);
 
-		source.addSensor(sensor);
+		source.get().addSensor(sensor);
+		sourceRepo.save(source.get());
 
-		sourceRepo.save(source);
-
-		return ResponseEntity.ok().body(null);
+		return ResponseEntity.ok().build();
 
 	}
 
+	/**
+	 * @param ids
+	 *            JSON array with ids of sensors
+	 * @return list of sensors from the list with ids or BAD REQUEST when ids is not
+	 *         array
+	 */
 	@GetMapping("/sensor")
 	public ResponseEntity<List<SensorWithSourceAndMeasurements>> getMeasurementsData(@RequestParam("id") String ids) {
-		ObjectMapper mapper = new ObjectMapper();
+		List<Long> idList;
 		try {
-			List<Long> idList = mapper.readValue(ids, new TypeReference<ArrayList<Long>>() {
-			});
+
+			idList = parseIdList(ids);
 			List<SensorWithSourceAndMeasurements> sensors = sensorRepo.findAllByIdIn(idList);
 			return new ResponseEntity<List<SensorWithSourceAndMeasurements>>(sensors, HttpStatus.OK);
+
 		} catch (IOException e) {
 			return ResponseEntity.badRequest().build();
 		}
+	}
+
+	private List<Long> parseIdList(String ids) throws JsonParseException, JsonMappingException, IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		List<Long> list = null;
+
+		list = mapper.readValue(ids, new TypeReference<ArrayList<Long>>() {
+		});
+		return list;
 	}
 }

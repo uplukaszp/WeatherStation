@@ -11,6 +11,9 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import lombok.Data;
 
+/**
+ * Represents an Api Key used to authorize user sensors.
+ */
 @Data
 @Entity
 public class ApiKey {

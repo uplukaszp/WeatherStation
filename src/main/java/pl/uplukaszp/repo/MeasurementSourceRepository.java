@@ -1,5 +1,6 @@
 package pl.uplukaszp.repo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,9 +12,9 @@ import pl.uplukaszp.dto.projections.MeasurementSourceWithoutOwner;
 @Repository
 public interface MeasurementSourceRepository extends JpaRepository<MeasurementSource, Long>{
 
-	List<MeasurementSourceWithoutOwner> findByOwnerEmail(String email);
+	ArrayList<MeasurementSourceWithoutOwner> findByOwnerEmail(String email);
 	
-	List<MeasurementSourceWithoutOwner>findByOwnerEmailOrPubliclyIsTrue(String email);
+	ArrayList<MeasurementSourceWithoutOwner> findByOwnerEmailOrPubliclyIsTrue(String email);
 
 	List<MeasurementSource> findAllByOwnerId(Long id);
 	

@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class SensorDTO {
 	@NotNull
-	private String unit;
+	private Long unit;
 	@NotNull
-	private String source;
+	private Long source;
 }

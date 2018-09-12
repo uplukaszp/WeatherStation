@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import pl.uplukaszp.domain.UserData;
 import pl.uplukaszp.repo.UserRepository;
 
+/**
+ * Loads user data, necessary during the authentication process
+ */
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 	@Autowired

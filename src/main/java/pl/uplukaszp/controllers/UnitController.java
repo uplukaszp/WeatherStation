@@ -15,9 +15,10 @@ public class UnitController {
 
 	@Autowired
 	UnitRepository repo;
-	
+
+	/** Returns list of all units stored in database */
 	@GetMapping("/unit")
-	public ResponseEntity<List<Unit>> getUnits(){
+	public ResponseEntity<List<Unit>> getUnits() {
 		return ResponseEntity.ok(repo.findAll());
 	}
 }

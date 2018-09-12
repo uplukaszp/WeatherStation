@@ -16,6 +16,11 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Data;
 
+/**
+ * Represents device, module, or subsystem whose purpose is to measure certain
+ * physical quantities described by units, which send the information to the
+ * measurement source @see pl.uplukaszp.domain.MeasurementSource 
+ */
 @Data
 @Entity
 public class Sensor {

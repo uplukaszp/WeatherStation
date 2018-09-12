@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,8 +38,18 @@ import pl.uplukaszp.util.exceptions.InconclusiveDataException;
 
 @RestController
 public class MeasurementSourceController {
+
+	/**
+	 * Address of forward geocoding API
+	 */
+	private static final String LINK = "https://eu1.locationiq.com/v1/search.php?key=";
+
+	/**
+	 * Used for authentication in forward geocoding service locationIq.com;
+	 */
 	@Value("${tokens.locationIQ}")
 	private String token;
+
 	@Autowired
 	MeasurementSourceRepository repo;
 
@@ -50,6 +59,11 @@ public class MeasurementSourceController {
 	@Autowired
 	LocationRepository locationRepo;
 
+	/**
+	 * Saves new Measurement Source in the database.
+	 * 
+	 * @return @see ValidationErrorParser#parseErrors(Errors)
+	 */
 	@PostMapping("/measurementSource")
 	public ResponseEntity<Map<String, String>> createSource(Authentication auth,
 			@RequestBody @Valid MeasurementSourceDTO sourceDTO, Errors errors) {
@@ -58,40 +72,46 @@ public class MeasurementSourceController {
 		}
 		MeasurementSource source = new MeasurementSource();
 		Location loc = new Location();
+
 		loc.setLatitude(Double.valueOf(sourceDTO.getLatitude()));
 		loc.setLongitude(Double.valueOf(sourceDTO.getLongitude()));
 		loc = locationRepo.save(loc);
+
 		source.setName(sourceDTO.getName());
 		source.setLocation(loc);
 		source.setPublicly(sourceDTO.isPublicly());
 		source.setOwner(userRepo.findByEmail(auth.getName()));
 		repo.save(source);
-		return ResponseEntity.ok(null);
+		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/measurementSource")
-	public ResponseEntity<Map<String, String>> removeSource() {
-		return null;
-	}
-
+	/**
+	 * 
+	 * 
+	 * @return When address argument is specified: list of Measurement Sources, in
+	 *         given radius ordered by distance between adders and source, or limit
+	 *         the list to 10 sources when radius is not defined
+	 * 
+	 * 
+	 * @return When address argument is not specified: list of all Measurement
+	 *         Sources belonging to the user.
+	 */
 	@GetMapping("/measurementSource")
 	public ResponseEntity<List<MeasurementSourceWithoutOwner>> getSources(Authentication auth,
-			@RequestParam(value = "address", required = false) String address) {
-		if (address == null) {
-			List<MeasurementSourceWithoutOwner> sources = repo.findByOwnerEmail(auth.getName());
-			return new ResponseEntity<List<MeasurementSourceWithoutOwner>>(sources, HttpStatus.OK);
+			@RequestParam(value = "address", required = false) String address,
+			@RequestParam(value = "range", required = false) Float radius) {
 
+		if (address == null) {
+			ArrayList<MeasurementSourceWithoutOwner> sources = repo.findByOwnerEmail(auth.getName());
+			return new ResponseEntity<List<MeasurementSourceWithoutOwner>>(sources, HttpStatus.OK);
 		}
-		String uri = "https://eu1.locationiq.com/v1/search.php?key=" + token + "&q=" + address + "&format=json";
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
+
 		try {
-			Location l = getLocationFromResponseBody(response.getBody());
-			List<MeasurementSourceWithoutOwner> sources = repo.findByOwnerEmailOrPubliclyIsTrue(auth.getName());
-			sources.sort(new LocationComparator(l));
-			ResponseEntity<List<MeasurementSourceWithoutOwner>> res = new ResponseEntity<List<MeasurementSourceWithoutOwner>>(
-					sources, HttpStatus.OK);
-			return res;
+			Location l = getLocationFromAddres(address);
+			ArrayList<MeasurementSourceWithoutOwner> sources = repo.findByOwnerEmailOrPubliclyIsTrue(auth.getName());
+
+			return ResponseEntity.ok().body(prepareList(sources, l, radius));
+
 		} catch (InconclusiveDataException e) {
 			return ResponseEntity.badRequest().build();
 		} catch (IllegalArgumentException | IOException e) {
@@ -99,7 +119,16 @@ public class MeasurementSourceController {
 		}
 	}
 
-	private Location getLocationFromResponseBody(String body)
+	
+	private Location getLocationFromAddres(String address)
+			throws InconclusiveDataException, IllegalArgumentException, IOException {
+		String uri = LINK + token + "&q=" + address + "&format=json";
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
+		return getLocationFromAPIResponseBody(response.getBody());
+	}
+
+	private Location getLocationFromAPIResponseBody(String body)
 			throws InconclusiveDataException, IllegalArgumentException, IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
@@ -118,6 +147,18 @@ public class MeasurementSourceController {
 		targetLocation.setLatitude(Double.valueOf(lat));
 		return targetLocation;
 
+	}
+
+	private List<MeasurementSourceWithoutOwner> prepareList(ArrayList<MeasurementSourceWithoutOwner> list, Location l,
+			Float radius) {
+		list.sort(new LocationComparator(l));
+		if (radius == null)
+			return (list.size() > 10) ? list.subList(0, 10) : list;
+		for (int i = 0; i < list.size(); i++) {
+			if (list.get(i).getLocation().getDistance() > radius)
+				return list.subList(0, i);
+		}
+		return list;
 	}
 
 }

@@ -15,6 +15,9 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import lombok.Data;
 
+/**
+ * Represents measured value, at a specified time and by a specific sensor.
+ */
 @Data
 @Entity
 public class Measurement {

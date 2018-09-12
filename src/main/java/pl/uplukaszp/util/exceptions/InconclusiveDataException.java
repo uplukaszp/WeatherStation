@@ -1,5 +1,9 @@
 package pl.uplukaszp.util.exceptions;
 
-public class InconclusiveDataException extends IllegalArgumentException{
+/**
+ * Thrown when addres, provided by client is ambigous, and can`t be converted to
+ * geographical coordinates
+ */
+public class InconclusiveDataException extends IllegalArgumentException {
 
 }

@@ -21,6 +21,13 @@ public class TokenUtility {
 		TokenUtility.secret = secret;
 	}
 
+	/**
+	 * Creates new token related to the user
+	 * 
+	 * @param expirationTime
+	 *            if null then generated token does not expire Never expires token
+	 *            is used to authorize Measurement Sources
+	 */
 	public static String createToken(String username, Long expirationTime) {
 
 		Date expirationDate = (expirationTime == null) ? null : new Date(System.currentTimeMillis() + expirationTime);
@@ -30,6 +37,7 @@ public class TokenUtility {
 		return token;
 	}
 
+	/** Extracts user name from token */
 	public static String getUserFromToken(String token) {
 		String user = Jwts.parser().setSigningKey(Base64.getEncoder().encodeToString(secret.getBytes()))
 				.parseClaimsJws(token).getBody().getSubject();

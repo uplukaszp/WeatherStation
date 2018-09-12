@@ -7,6 +7,9 @@ import javax.persistence.Id;
 
 import lombok.Data;
 
+/**
+ * Represents user of system.
+ */
 @Data
 @Entity
 public class UserData {

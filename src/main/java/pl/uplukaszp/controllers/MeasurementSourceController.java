@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -35,6 +37,7 @@ import pl.uplukaszp.repo.UserRepository;
 import pl.uplukaszp.util.LocationComparator;
 import pl.uplukaszp.util.ValidationErrorParser;
 import pl.uplukaszp.util.exceptions.InconclusiveDataException;
+import pl.uplukaszp.util.exceptions.LocationNotFoundException;
 
 @RestController
 public class MeasurementSourceController {
@@ -88,48 +91,56 @@ public class MeasurementSourceController {
 	/**
 	 * 
 	 * 
-	 * @return When address argument is specified: list of Measurement Sources, in
+	 * @return When address parameter is specified: list of Measurement Sources, in
 	 *         given radius ordered by distance between adders and source, or limit
 	 *         the list to 10 sources when radius is not defined
-	 * 
-	 * 
-	 * @return When address argument is not specified: list of all Measurement
+	 *
+	 * @return When address parameter is not specified: list of all Measurement
 	 *         Sources belonging to the user.
+	 * @return When address is not accurate or address does not exist, returns bad
+	 *         Request or not found HTTP error
 	 */
 	@GetMapping("/measurementSource")
 	public ResponseEntity<List<MeasurementSourceWithoutOwner>> getSources(Authentication auth,
 			@RequestParam(value = "address", required = false) String address,
-			@RequestParam(value = "range", required = false) Float radius) {
+			@RequestParam(value = "range", required = false) Integer radius) {
 
 		if (address == null) {
 			ArrayList<MeasurementSourceWithoutOwner> sources = repo.findByOwnerEmail(auth.getName());
 			return new ResponseEntity<List<MeasurementSourceWithoutOwner>>(sources, HttpStatus.OK);
 		}
+		if (radius != null) {
+			if (radius < 0)
+				return ResponseEntity.badRequest().build();
+		}
 
 		try {
 			Location l = getLocationFromAddres(address);
 			ArrayList<MeasurementSourceWithoutOwner> sources = repo.findByOwnerEmailOrPubliclyIsTrue(auth.getName());
-
 			return ResponseEntity.ok().body(prepareList(sources, l, radius));
 
+		} catch (LocationNotFoundException e) {
+			return ResponseEntity.notFound().build();
 		} catch (InconclusiveDataException e) {
 			return ResponseEntity.badRequest().build();
-		} catch (IllegalArgumentException | IOException e) {
+		} catch (IOException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
 
-	
 	private Location getLocationFromAddres(String address)
-			throws InconclusiveDataException, IllegalArgumentException, IOException {
+			throws InconclusiveDataException, LocationNotFoundException, IOException {
 		String uri = LINK + token + "&q=" + address + "&format=json";
 		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
-		return getLocationFromAPIResponseBody(response.getBody());
+		try {
+			ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
+			return getLocationFromAPIResponseBody(response.getBody());
+		} catch (RestClientException e) {
+			throw new LocationNotFoundException();
+		}
 	}
 
-	private Location getLocationFromAPIResponseBody(String body)
-			throws InconclusiveDataException, IllegalArgumentException, IOException {
+	private Location getLocationFromAPIResponseBody(String body) throws InconclusiveDataException, IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 		List<Map<String, List<String>>> result;
@@ -150,7 +161,7 @@ public class MeasurementSourceController {
 	}
 
 	private List<MeasurementSourceWithoutOwner> prepareList(ArrayList<MeasurementSourceWithoutOwner> list, Location l,
-			Float radius) {
+			Integer radius) {
 		list.sort(new LocationComparator(l));
 		if (radius == null)
 			return (list.size() > 10) ? list.subList(0, 10) : list;

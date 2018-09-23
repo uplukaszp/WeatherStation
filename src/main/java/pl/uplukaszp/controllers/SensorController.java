@@ -1,6 +1,8 @@
 package pl.uplukaszp.controllers;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import pl.uplukaszp.domain.Measurement;
 import pl.uplukaszp.domain.MeasurementSource;
 import pl.uplukaszp.domain.Sensor;
 import pl.uplukaszp.domain.Unit;
@@ -82,17 +85,32 @@ public class SensorController {
 	 *         array
 	 */
 	@GetMapping("/sensor")
-	public ResponseEntity<List<SensorWithSourceAndMeasurements>> getMeasurementsData(@RequestParam("id") String ids) {
+	public ResponseEntity<List<SensorWithSourceAndMeasurements>> getMeasurementsData(@RequestParam("id") String ids,
+			@RequestParam(name = "startDate", required = false) String startDate,
+			@RequestParam(name = "endDate", required = false) String endDate) {
+
 		List<Long> idList;
 		try {
 
 			idList = parseIdList(ids);
-			List<SensorWithSourceAndMeasurements> sensors = sensorRepo.findAllByIdIn(idList);
-			return new ResponseEntity<List<SensorWithSourceAndMeasurements>>(sensors, HttpStatus.OK);
 
 		} catch (IOException e) {
 			return ResponseEntity.badRequest().build();
 		}
+		if (startDate != null && endDate != null) {
+			LocalDateTime start = LocalDateTime.parse(startDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+			LocalDateTime end = LocalDateTime.parse(endDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+			List<SensorWithSourceAndMeasurements> sensors = sensorRepo
+					.findAllByIdIn(idList);
+			for (SensorWithSourceAndMeasurements sensor : sensors) {
+				sensor.setMeasurements(filterByDate(sensor.getMeasurements(), start, end));
+			}
+			return new ResponseEntity<List<SensorWithSourceAndMeasurements>>(sensors, HttpStatus.OK);
+
+		}
+		List<SensorWithSourceAndMeasurements> sensors = sensorRepo.findAllByIdIn(idList);
+		return new ResponseEntity<List<SensorWithSourceAndMeasurements>>(sensors, HttpStatus.OK);
+
 	}
 
 	private List<Long> parseIdList(String ids) throws JsonParseException, JsonMappingException, IOException {
@@ -102,5 +120,14 @@ public class SensorController {
 		list = mapper.readValue(ids, new TypeReference<ArrayList<Long>>() {
 		});
 		return list;
+	}
+	
+	private List<Measurement> filterByDate(List<Measurement> list,LocalDateTime start,LocalDateTime end)
+	{
+		List<Measurement>filteredList=new ArrayList<>();
+		for (Measurement measurement : list) {
+			if(measurement.getDate().isAfter(start)&&measurement.getDate().isBefore(end))filteredList.add(measurement);
+		}
+		return filteredList;
 	}
 }

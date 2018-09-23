@@ -7,5 +7,6 @@ import pl.uplukaszp.domain.Measurement;
 public interface SensorWithSourceAndMeasurements extends SensorWithoutSourceAndMeasurements{
 	public MeasurementSourceOnlyWithName getSource();
 	public List<Measurement> getMeasurements();
+	public void setMeasurements(List<Measurement> measurements);
 
 }

@@ -8,17 +8,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import pl.uplukaszp.domain.Unit;
-import pl.uplukaszp.repo.UnitRepository;
+import pl.uplukaszp.services.UnitServiceImpl;
 
 @RestController
 public class UnitController {
 
 	@Autowired
-	UnitRepository repo;
+	UnitServiceImpl service;
 
 	/** Returns list of all units stored in database */
 	@GetMapping("/unit")
 	public ResponseEntity<List<Unit>> getUnits() {
-		return ResponseEntity.ok(repo.findAll());
+		return ResponseEntity.ok(service.findAll());
 	}
 }

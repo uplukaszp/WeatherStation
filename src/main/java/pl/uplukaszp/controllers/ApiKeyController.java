@@ -7,13 +7,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import pl.uplukaszp.dto.projections.ApiKeyWithoutOwner;
-import pl.uplukaszp.repo.ApiKeyRepository;
+import pl.uplukaszp.services.ApiKeyServiceImpl;
 
 @RestController
 public class ApiKeyController {
 
 	@Autowired
-	private ApiKeyRepository repo;
+	private ApiKeyServiceImpl service;
 
 	/**
 	 * @return An Api key, related to user
@@ -21,6 +21,6 @@ public class ApiKeyController {
 	@GetMapping("/key")
 	@ResponseBody
 	public ApiKeyWithoutOwner getKey(Authentication auth) {
-		return repo.findOneByOwnerEmail(auth.getName());
+		return service.findOneByOwnerEmail(auth.getName());
 	}
 }
